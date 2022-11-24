@@ -1,37 +1,28 @@
+from dataclasses import asdict, dataclass
+
+
+@dataclass
 class InfoMessage:
     """Информационное сообщение о тренировке."""
-    def __init__(
-        self,
-        training_type: str,
-        duration: int,
-        distance: int,
-        speed: float,
-        calories: int
-    ) -> None:
-        self.training_type = training_type
-        self.duration = duration
-        self.distance = distance
-        self.speed = speed
-        self.calories = calories
-        return None
+
+    training_type: str
+    duration: int
+    distance: int
+    speed: float
+    calories: int
+    data: str = ('Тип тренировки: {}; '
+                 'Длительность: {:.3f} ч.; '
+                 'Дистанция: {:.3f} км; '
+                 'Ср. скорость: {:.3f} км/ч; '
+                 'Потрачено ккал: {:.3f}.')
 
     def get_message(self) -> str:
-        data: str = ('Тип тренировки: {}; '
-                     'Длительность: {:.3f} ч.; '
-                     'Дистанция: {:.3f} км; '
-                     'Ср. скорость: {:.3f} км/ч; '
-                     'Потрачено ккал: {:.3f}.')
-        return data.format(
-            self.training_type,
-            self.duration,
-            self.distance,
-            self.speed,
-            self.calories
-        )
+        return self.data.format(*asdict(self).values())
 
 
 class Training:
     """Базовый класс тренировки."""
+
     LEN_STEP: float = 0.65
     M_IN_KM: int = 1000
     MIN_IN_H: int = 60
@@ -71,6 +62,7 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
+
     CALORIES_RUNNING_MULTIPLIER_1: int = 18
     CALORIES_RUNNING_MULTIPLIER_2: float = 1.79
 
@@ -86,6 +78,7 @@ class Running(Training):
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
+
     CALORIES_WEIGHT_MULTIPLIER: float = 0.035
     CALORIES_SPEED_HEIGHT_MULTIPLIER: float = 0.029
     KMH_IN_MSEC: float = 0.278
@@ -114,6 +107,7 @@ class SportsWalking(Training):
 
 class Swimming(Training):
     """Тренировка: плавание."""
+
     LEN_STEP: float = 1.38
     CALORIES_MEAN_SPEED_SHIFT: float = 1.1
     CALORIES_WEIGHT_MULTIPLIER: int = 2
@@ -142,8 +136,15 @@ class Swimming(Training):
 
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
-    training_type = {'SWM': Swimming, 'RUN': Running, 'WLK': SportsWalking}
-    return training_type[workout_type](*data)
+    training_type: dict[str, Training] = {
+        'SWM': Swimming,
+        'RUN': Running,
+        'WLK': SportsWalking
+    }
+    try:
+        return training_type[workout_type](*data)
+    except KeyError:
+        print('Указан некорректный тип тренировки')
 
 
 def main(training: Training) -> None:
