@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass
+from typing import Dict
 
 
 @dataclass
@@ -83,6 +84,7 @@ class SportsWalking(Training):
     CALORIES_SPEED_HEIGHT_MULTIPLIER: float = 0.029
     KMH_IN_MSEC: float = 0.278
     CM_IN_M: int = 100
+    DEGREE: int = 2
 
     def __init__(
         self,
@@ -97,7 +99,7 @@ class SportsWalking(Training):
     def get_spent_calories(self) -> float:
         calories = (
             (self.CALORIES_WEIGHT_MULTIPLIER * self.weight
-             + ((self.get_mean_speed() * self.KMH_IN_MSEC) ** 2
+             + ((self.get_mean_speed() * self.KMH_IN_MSEC) ** self.DEGREE
                  / (self.height / self.CM_IN_M))
              * self.CALORIES_SPEED_HEIGHT_MULTIPLIER
              * self.weight) * (self.duration * self.MIN_IN_H)
@@ -136,15 +138,16 @@ class Swimming(Training):
 
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
-    training_type: dict[str, Training] = {
+    training_type: Dict[str, Training] = {
         'SWM': Swimming,
         'RUN': Running,
         'WLK': SportsWalking
     }
-    try:
-        return training_type[workout_type](*data)
-    except KeyError:
-        print('Указан некорректный тип тренировки')
+    for i in training_type:
+        if i in ('SWM', 'RUN', 'WLK'):
+            return training_type[workout_type](*data)
+        else:
+            raise KeyError('Указан некорректный тип тренировки')
 
 
 def main(training: Training) -> None:
